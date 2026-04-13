@@ -385,6 +385,47 @@ export default function RecipeDetail() {
           </button>
         )}
 
+        {/* Macros section */}
+        {!isEditing && (
+          <div style={{ marginTop: 36 }}>
+            <div style={{ borderTop: `1.5px solid ${OLIVE}`, opacity: 0.18, marginBottom: 20 }} />
+
+            <p style={{ fontFamily: "'Srisakdi', cursive", fontSize: 18, color: OLIVE, marginBottom: 16, letterSpacing: '0.01em' }}>
+              Výživové hodnoty
+            </p>
+
+            {/* Macro bars */}
+            {[
+              { label: 'Kalórie', value: '–', unit: 'kcal', pct: 0 },
+              { label: 'Bielkoviny', value: '–', unit: 'g', pct: 0 },
+              { label: 'Sacharidy', value: '–', unit: 'g', pct: 0 },
+              { label: 'Tuky', value: '–', unit: 'g', pct: 0 },
+              { label: 'Vláknina', value: '–', unit: 'g', pct: 0 },
+            ].map(({ label, value, unit, pct }) => (
+              <div key={label} style={{ marginBottom: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
+                  <span style={{ fontFamily: "'Alike', serif", fontSize: 12, color: OLIVE }}>{label}</span>
+                  <span style={{ fontFamily: "'Alike', serif", fontSize: 12, color: OLIVE, opacity: 0.7 }}>
+                    {value} {unit}
+                  </span>
+                </div>
+                <div style={{ height: 4, borderRadius: 4, background: 'rgba(104,104,3,0.1)', overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%', borderRadius: 4,
+                    background: `linear-gradient(to right, ${YELLOW}, #B8BA3A)`,
+                    width: `${pct}%`,
+                    transition: 'width 0.6s ease',
+                  }} />
+                </div>
+              </div>
+            ))}
+
+            <p style={{ fontFamily: "'Alike', serif", fontSize: 10, color: OLIVE, opacity: 0.4, marginTop: 14, textAlign: 'center' }}>
+              Hodnoty budú dostupné čoskoro
+            </p>
+          </div>
+        )}
+
         {/* Save button in edit mode */}
         {isEditing && (
           <button onClick={() => {
