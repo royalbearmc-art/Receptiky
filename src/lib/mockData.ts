@@ -1,0 +1,67 @@
+import type { Recipe } from './types';
+
+export const mockRecipes: Recipe[] = [
+  {
+    id: '1',
+    title: 'Scrambled Eggs',
+    description: 'Simple and fluffy scrambled eggs.',
+    photo_url: null,
+    tags: ['breakfast', 'quick'],
+    created_at: '2025-01-10T08:00:00Z',
+    updated_at: '2025-03-15T10:00:00Z',
+    ingredients: [
+      { name: 'eggs', amount: '4', unit: 'pcs' },
+      { name: 'milk', amount: '5', unit: 'ml' },
+      { name: 'butter', amount: '1', unit: 'tsp' },
+      { name: 'salt', amount: '1', unit: 'pinch' },
+    ],
+    steps: [
+      { text: 'Crack eggs into a bowl and whisk with milk.', timer_minutes: null },
+      { text: 'Melt butter in a pan over low heat.', timer_minutes: 1 },
+      { text: 'Pour in eggs and stir gently until just set.', timer_minutes: 3 },
+      { text: 'Season with salt and serve immediately.', timer_minutes: null },
+    ],
+  },
+  {
+    id: '2',
+    title: 'Pasta Carbonara',
+    description: 'Classic Roman pasta with eggs, cheese, and pancetta.',
+    photo_url: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600',
+    tags: ['dinner', 'italian'],
+    created_at: '2025-02-20T12:00:00Z',
+    updated_at: '2025-04-01T18:00:00Z',
+    ingredients: [
+      { name: 'spaghetti', amount: '200', unit: 'g' },
+      { name: 'pancetta', amount: '100', unit: 'g' },
+      { name: 'egg yolks', amount: '3', unit: 'pcs' },
+      { name: 'pecorino romano', amount: '50', unit: 'g' },
+      { name: 'black pepper', amount: '1', unit: 'tsp' },
+    ],
+    steps: [
+      { text: 'Cook spaghetti in salted boiling water until al dente.', timer_minutes: 10 },
+      { text: 'Fry pancetta in a pan until crispy.', timer_minutes: 5 },
+      { text: 'Mix egg yolks with grated pecorino and pepper.', timer_minutes: null },
+      { text: 'Combine hot pasta with pancetta, remove from heat, add egg mixture and toss quickly.', timer_minutes: null },
+    ],
+  },
+  {
+    id: '3',
+    title: 'Nepečený kolač z červenej repy',
+    description: 'No-bake beetroot cake.',
+    photo_url: null,
+    tags: ['dessert', 'no-bake'],
+    created_at: '2024-12-05T09:00:00Z',
+    updated_at: '2025-02-10T14:00:00Z',
+    ingredients: [
+      { name: 'beetroot', amount: '200', unit: 'g' },
+      { name: 'oats', amount: '150', unit: 'g' },
+      { name: 'honey', amount: '3', unit: 'tbsp' },
+      { name: 'cocoa', amount: '2', unit: 'tbsp' },
+    ],
+    steps: [
+      { text: 'Grate the beetroot finely.', timer_minutes: null },
+      { text: 'Mix all ingredients together until combined.', timer_minutes: null },
+      { text: 'Press into a mould and refrigerate for 2 hours.', timer_minutes: 120 },
+    ],
+  },
+];
