@@ -8,17 +8,6 @@ const CARD_COLOR = '#D9D95D';
 const OVERLAY_COLOR = '#E8EAA0';
 const TEXT_COLOR = '#686803';
 
-const ICON_BTN: React.CSSProperties = {
-  background: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-  padding: 0,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 36,
-  height: 36,
-};
 
 type SortMode = 'alpha' | 'last-edited' | 'first-edited' | 'duration';
 type ViewMode = 'grid' | 'tags';

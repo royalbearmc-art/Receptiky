@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mockRecipes } from '../lib/mockData';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
+import { Separator } from '../components/ui/separator';
 
 const recipe = mockRecipes[2];
 const OLIVE = '#D9D95D';

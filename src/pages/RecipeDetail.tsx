@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Cropper from 'react-easy-crop';
 import type { Area } from 'react-easy-crop';
 import { mockRecipes } from '../lib/mockData';
-import type { Recipe, Ingredient, Step } from '../lib/types';
+import type { Recipe, Ingredient } from '../lib/types';
 
 async function getCroppedImg(imageSrc: string, cropPixels: Area): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -40,6 +40,8 @@ const emptyRecipe: Recipe = {
   tags: [],
   ingredients: [{ name: '', amount: '', unit: '' }],
   steps: [{ text: '', timer_minutes: null }],
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
 };
 
 export default function RecipeDetail() {
