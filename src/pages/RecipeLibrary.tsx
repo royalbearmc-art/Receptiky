@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockRecipes } from '../lib/mockData';
+import { useRecipes } from '../lib/RecipesContext';
 import type { Recipe } from '../lib/types';
 
 const BG_GRADIENT = 'linear-gradient(to bottom, #D9D95D 0%, #E3E488 26%, #EBEDA9 49%, #F3F6CC 75%, #FAFEEB 100%) top / 100% 112px no-repeat, #FAFEEB';
@@ -24,6 +24,7 @@ const SORT_LABELS: Record<SortMode, string> = {
 
 export default function RecipeLibrary() {
   const navigate = useNavigate();
+  const { recipes } = useRecipes();
   const [sortMode, setSortMode] = useState<SortMode>('alpha');
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
@@ -31,7 +32,7 @@ export default function RecipeLibrary() {
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   /* ── sorting ── */
-  const sorted = [...mockRecipes].sort((a, b) => {
+  const sorted = [...recipes].sort((a, b) => {
     if (sortMode === 'alpha') return a.title.localeCompare(b.title);
     if (sortMode === 'last-edited') return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
     if (sortMode === 'first-edited') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
@@ -40,21 +41,21 @@ export default function RecipeLibrary() {
   });
 
   /* ── tag grouping ── */
-  const allTags = [...new Set(mockRecipes.flatMap((r) => r.tags))].sort((a, b) => {
+  const allTags = [...new Set(recipes.flatMap((r) => r.tags))].sort((a, b) => {
     if (sortMode === 'alpha') return a.localeCompare(b);
     if (sortMode === 'last-edited') {
-      const latestA = Math.max(...mockRecipes.filter(r => r.tags.includes(a)).map(r => new Date(r.updated_at).getTime()));
-      const latestB = Math.max(...mockRecipes.filter(r => r.tags.includes(b)).map(r => new Date(r.updated_at).getTime()));
+      const latestA = Math.max(...recipes.filter(r => r.tags.includes(a)).map(r => new Date(r.updated_at).getTime()));
+      const latestB = Math.max(...recipes.filter(r => r.tags.includes(b)).map(r => new Date(r.updated_at).getTime()));
       return latestB - latestA;
     }
     if (sortMode === 'first-edited') {
-      const oldestA = Math.min(...mockRecipes.filter(r => r.tags.includes(a)).map(r => new Date(r.created_at).getTime()));
-      const oldestB = Math.min(...mockRecipes.filter(r => r.tags.includes(b)).map(r => new Date(r.created_at).getTime()));
+      const oldestA = Math.min(...recipes.filter(r => r.tags.includes(a)).map(r => new Date(r.created_at).getTime()));
+      const oldestB = Math.min(...recipes.filter(r => r.tags.includes(b)).map(r => new Date(r.created_at).getTime()));
       return oldestA - oldestB;
     }
     if (sortMode === 'duration') {
-      const avgA = mockRecipes.filter(r => r.tags.includes(a)).reduce((s, r) => s + totalMinutes(r), 0);
-      const avgB = mockRecipes.filter(r => r.tags.includes(b)).reduce((s, r) => s + totalMinutes(r), 0);
+      const avgA = recipes.filter(r => r.tags.includes(a)).reduce((s, r) => s + totalMinutes(r), 0);
+      const avgB = recipes.filter(r => r.tags.includes(b)).reduce((s, r) => s + totalMinutes(r), 0);
       return avgA - avgB;
     }
     return 0;
@@ -101,8 +102,9 @@ export default function RecipeLibrary() {
           <div onClick={() => setShowViewMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 98 }} />
           <div style={{
             position: 'absolute', right: 22, top: 129, zIndex: 99,
-            background: 'white', borderRadius: 12, padding: '6px 0',
-            boxShadow: '0 4px 16px rgba(104,104,3,0.18)', minWidth: 190,
+            background: '#F5F8D6', borderRadius: 12, padding: '6px 0',
+            boxShadow: '0 4px 16px rgba(104,104,3,0.15)', minWidth: 190,
+            border: '1px solid rgba(104,104,3,0.1)',
           }}>
             <button onClick={() => { setViewMode('grid'); setSelectedTag(null); setShowViewMenu(false); }}
               style={{
@@ -136,8 +138,9 @@ export default function RecipeLibrary() {
           <div onClick={() => setShowSortMenu(false)} style={{ position: 'fixed', inset: 0, zIndex: 98 }} />
           <div style={{
             position: 'absolute', right: 22, top: 88, zIndex: 99,
-            background: 'white', borderRadius: 12, padding: '6px 0',
-            boxShadow: '0 4px 16px rgba(104,104,3,0.18)', minWidth: 180,
+            background: '#F5F8D6', borderRadius: 12, padding: '6px 0',
+            boxShadow: '0 4px 16px rgba(104,104,3,0.15)', minWidth: 180,
+            border: '1px solid rgba(104,104,3,0.1)',
           }}>
             {(Object.entries(SORT_LABELS) as [SortMode, string][]).map(([mode, label]) => (
               <button key={mode} onClick={() => { setSortMode(mode); setShowSortMenu(false); }}

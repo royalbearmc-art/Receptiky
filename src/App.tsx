@@ -3,11 +3,13 @@ import Cover from './pages/Cover';
 import RecipeLibrary from './pages/RecipeLibrary';
 import RecipeDetail from './pages/RecipeDetail';
 import RecipeDesignOptions from './pages/RecipeDesignOptions';
+import { RecipesProvider } from './lib/RecipesContext';
 
 export default function App() {
   return (
+    <RecipesProvider>
     <BrowserRouter>
-      <div style={{ width: 360, height: 800, margin: '0 auto', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
+      <div style={{ width: '100%', maxWidth: 430, minHeight: '100dvh', margin: '0 auto', overflowY: 'auto', overflowX: 'hidden', position: 'relative' }}>
         <Routes>
           <Route path="/" element={<Cover />} />
           <Route path="/recipes" element={<RecipeLibrary />} />
@@ -17,5 +19,6 @@ export default function App() {
         </Routes>
       </div>
     </BrowserRouter>
+    </RecipesProvider>
   );
 }

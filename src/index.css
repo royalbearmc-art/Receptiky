@@ -13,16 +13,20 @@
 
 html,
 body {
-  background-color: #ffffff !important;
+  background-color: #FAFEEB !important;
   font-family: 'Alike', serif;
   color: #000;
   -webkit-font-smoothing: antialiased;
+  width: 100%;
+  min-height: 100dvh;
 }
 
 #root {
-  min-height: 100svh;
+  width: 100%;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  background-color: #FAFEEB;
 }
 
 @keyframes btn-pulse {

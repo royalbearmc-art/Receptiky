@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Cropper from 'react-easy-crop';
 import type { Area } from 'react-easy-crop';
-import { mockRecipes } from '../lib/mockData';
+import { useRecipes } from '../lib/RecipesContext';
 import type { Recipe, Ingredient } from '../lib/types';
 
 async function getCroppedImg(imageSrc: string, cropPixels: Area): Promise<string> {
@@ -47,9 +47,10 @@ const emptyRecipe: Recipe = {
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { recipes, updateRecipe, addRecipe } = useRecipes();
   const isNew = id === 'new';
 
-  const found = mockRecipes.find((r) => r.id === id);
+  const found = recipes.find((r) => r.id === id);
   const initial = isNew ? emptyRecipe : found;
 
   const [recipe, setRecipe] = useState<Recipe>(initial ?? emptyRecipe);
@@ -222,8 +223,9 @@ export default function RecipeDetail() {
       {showMenu && (
         <div style={{
           position: 'absolute', right: 9, top: 70, zIndex: 99,
-          background: 'white', borderRadius: 12, padding: '6px 0',
-          boxShadow: '0 4px 16px rgba(104,104,3,0.18)', minWidth: 150,
+          background: '#F5F8D6', borderRadius: 12, padding: '6px 0',
+          boxShadow: '0 4px 16px rgba(104,104,3,0.15)', minWidth: 150,
+          border: '1px solid rgba(104,104,3,0.1)',
         }}>
           <button onClick={() => { setIsEditing(true); setShowMenu(false); }} style={{
             display: 'block', width: '100%', padding: '10px 16px',
@@ -264,7 +266,7 @@ export default function RecipeDetail() {
                     <input value={ing.amount} onChange={(e) => updIng(i, 'amount', e.target.value)}
                       placeholder="Mn." style={{ ...inputStyle, width: 36 }} />
                     <input value={ing.unit} onChange={(e) => updIng(i, 'unit', e.target.value)}
-                      placeholder="j." style={{ ...inputStyle, width: 28 }} />
+                      placeholder="jedn." style={{ ...inputStyle, width: 52 }} />
                     <input value={ing.name} onChange={(e) => updIng(i, 'name', e.target.value)}
                       placeholder="Ingrediencia" style={{ ...inputStyle, flex: 1 }} />
                     <button onClick={() => removeIng(i)} style={{
@@ -385,7 +387,17 @@ export default function RecipeDetail() {
 
         {/* Save button in edit mode */}
         {isEditing && (
-          <button onClick={() => { setIsEditing(false); setShowMenu(false); }} style={{
+          <button onClick={() => {
+            const saved = { ...recipe, updated_at: new Date().toISOString() };
+            if (isNew) {
+              const newId = Date.now().toString();
+              addRecipe({ ...saved, id: newId, created_at: new Date().toISOString() });
+            } else {
+              updateRecipe(saved);
+            }
+            setIsEditing(false);
+            setShowMenu(false);
+          }} style={{
             width: '100%', padding: '12px 0', borderRadius: 27,
             background: YELLOW, border: 'none', cursor: 'pointer',
             fontFamily: "'Alike', serif", fontSize: 14, color: OLIVE,
