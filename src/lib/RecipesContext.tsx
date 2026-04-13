@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from './supabase';
+import { sanitizeRecipe } from './sanitize';
 import type { Recipe } from './types';
 
 interface RecipesCtx {
@@ -27,16 +28,17 @@ export function RecipesProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const updateRecipe = async (updated: Recipe) => {
-    const { id, ...fields } = updated;
-    fields.updated_at = new Date().toISOString();
-    await supabase.from('recipes').update(fields).eq('id', id);
-    setRecipes((prev) => prev.map((r) => (r.id === id ? updated : r)));
+    const clean = sanitizeRecipe(updated);
+    const now = new Date().toISOString();
+    await supabase.from('recipes').update({ ...clean, updated_at: now }).eq('id', updated.id);
+    setRecipes((prev) => prev.map((r) => (r.id === updated.id ? { ...updated, ...clean, updated_at: now } : r)));
   };
 
   const addRecipe = async (recipe: Recipe) => {
+    const clean = sanitizeRecipe(recipe);
     const now = new Date().toISOString();
-    const newRecipe = { ...recipe, created_at: now, updated_at: now };
-    const { data } = await supabase.from('recipes').insert(newRecipe).select().single();
+    const payload = { ...clean, created_at: now, updated_at: now };
+    const { data } = await supabase.from('recipes').insert(payload).select().single();
     if (data) setRecipes((prev) => [data as Recipe, ...prev]);
   };
 

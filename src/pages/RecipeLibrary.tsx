@@ -202,6 +202,23 @@ export default function RecipeLibrary() {
         )}
 
         {/* GRID VIEW — normal or filtered by tag */}
+        {(viewMode === 'grid' || selectedTag) && visibleRecipes.length === 0 && (
+          <div style={{
+            position: 'fixed', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            pointerEvents: 'none',
+          }}>
+            <p style={{
+              fontFamily: "'Srisakdi', cursive",
+              fontSize: 22, color: TEXT_COLOR,
+              opacity: 0.5, textAlign: 'center',
+              lineHeight: '140%', padding: '0 32px',
+            }}>
+              Zatiaľ nemáš<br />žiadne receptíky
+            </p>
+          </div>
+        )}
+
         {(viewMode === 'grid' || selectedTag) && (
           <div className="flex flex-wrap gap-[15px] justify-center">
             {visibleRecipes.map((recipe) => (
