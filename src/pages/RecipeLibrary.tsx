@@ -79,7 +79,7 @@ export default function RecipeLibrary() {
       <img
         src="/plus.png" alt="Add"
         onClick={() => navigate('/recipes/new')}
-        style={{ position: 'absolute', left: 271, top: 75, width: 31, height: 31, cursor: 'pointer', objectFit: 'contain' }}
+        style={{ position: 'absolute', right: 22, top: 134, width: 31, height: 31, cursor: 'pointer', objectFit: 'contain' }}
       />
 
       {/* Sort button */}

@@ -61,7 +61,7 @@ export default function Cover() {
       </h1>
 
       {/* Buttons — kept together with original spacing */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 53.76, alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10.76, alignItems: 'center' }}>
         <button onClick={() => navigate('/recipes')} className="btn-pulse" style={BTN}>
           Recepty
         </button>
