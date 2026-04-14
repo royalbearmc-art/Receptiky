@@ -79,7 +79,7 @@ function sanitizePhotoUrl(url: unknown): string | null {
   }
 }
 
-export function sanitizeRecipe(raw: Partial<Recipe>): Omit<Recipe, 'id' | 'created_at' | 'updated_at'> {
+export function sanitizeRecipe(raw: Partial<Recipe>): Omit<Recipe, 'id' | 'created_at' | 'updated_at' | 'cached_macros'> {
   const title = clampStr(raw.title, LIMITS.title);
   if (!title) throw new Error('Recept musí mať názov.');
 

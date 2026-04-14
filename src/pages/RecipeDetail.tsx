@@ -1,9 +1,11 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Cropper from 'react-easy-crop';
 import type { Area } from 'react-easy-crop';
 import { useRecipes } from '../lib/RecipesContext';
-import type { Recipe, Ingredient } from '../lib/types';
+import { uploadRecipeImage } from '../lib/uploadImage';
+import { calculateRecipeMacros } from '../lib/macros';
+import type { Recipe, Ingredient, Macros } from '../lib/types';
 
 async function getCroppedImg(imageSrc: string, cropPixels: Area): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -40,6 +42,7 @@ const emptyRecipe: Recipe = {
   tags: [],
   ingredients: [{ name: '', amount: '', unit: '' }],
   steps: [{ text: '', timer_minutes: null }],
+  cached_macros: null,
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
 };
@@ -61,6 +64,23 @@ export default function RecipeDetail() {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [macros, setMacros] = useState<Macros | null>(recipe.cached_macros ?? null);
+  const [macrosLoading, setMacrosLoading] = useState(false);
+
+  useEffect(() => {
+    if (isEditing || isNew || macros) return;
+    if (recipe.ingredients.length === 0 || !recipe.ingredients[0].name) return;
+    setMacrosLoading(true);
+    calculateRecipeMacros(recipe.ingredients)
+      .then((m) => {
+        setMacros(m);
+        updateRecipe({ ...recipe, cached_macros: m });
+      })
+      .finally(() => setMacrosLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recipe.id]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -79,13 +99,22 @@ export default function RecipeDetail() {
 
   const confirmCrop = async () => {
     if (!cropSrc || !croppedAreaPixels) return;
+    setUploading(true);
+    setUploadError(null);
     try {
       const cropped = await getCroppedImg(cropSrc, croppedAreaPixels);
+      // Show the local preview immediately for snappy UX
       setPreviewUrl(cropped);
-      setRecipe((r) => ({ ...r, photo_url: cropped }));
+      // Upload to Supabase Storage, then persist the public URL
+      const publicUrl = await uploadRecipeImage(cropped);
+      setPreviewUrl(publicUrl);
+      setRecipe((r) => ({ ...r, photo_url: publicUrl }));
       setCropSrc(null);
     } catch (e) {
-      console.error('Crop failed:', e);
+      console.error('Crop/upload failed:', e);
+      setUploadError(e instanceof Error ? e.message : 'Nahrávanie zlyhalo.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -394,34 +423,49 @@ export default function RecipeDetail() {
               Výživové hodnoty
             </p>
 
-            {/* Macro bars */}
-            {[
-              { label: 'Kalórie', value: '–', unit: 'kcal', pct: 0 },
-              { label: 'Bielkoviny', value: '–', unit: 'g', pct: 0 },
-              { label: 'Sacharidy', value: '–', unit: 'g', pct: 0 },
-              { label: 'Tuky', value: '–', unit: 'g', pct: 0 },
-              { label: 'Vláknina', value: '–', unit: 'g', pct: 0 },
-            ].map(({ label, value, unit, pct }) => (
-              <div key={label} style={{ marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
-                  <span style={{ fontFamily: "'Alike', serif", fontSize: 12, color: OLIVE }}>{label}</span>
-                  <span style={{ fontFamily: "'Alike', serif", fontSize: 12, color: OLIVE, opacity: 0.7 }}>
-                    {value} {unit}
-                  </span>
-                </div>
-                <div style={{ height: 4, borderRadius: 4, background: 'rgba(104,104,3,0.1)', overflow: 'hidden' }}>
-                  <div style={{
-                    height: '100%', borderRadius: 4,
-                    background: `linear-gradient(to right, ${YELLOW}, #B8BA3A)`,
-                    width: `${pct}%`,
-                    transition: 'width 0.6s ease',
-                  }} />
-                </div>
-              </div>
-            ))}
+            {macrosLoading && (
+              <p style={{ fontFamily: "'Alike', serif", fontSize: 12, color: OLIVE, opacity: 0.5, textAlign: 'center', marginBottom: 16 }}>
+                Počítam výživové hodnoty…
+              </p>
+            )}
 
-            <p style={{ fontFamily: "'Alike', serif", fontSize: 10, color: OLIVE, opacity: 0.4, marginTop: 14, textAlign: 'center' }}>
-              Hodnoty budú dostupné čoskoro
+            {!macrosLoading && macros && (() => {
+              const maxCal = 2000;
+              const rows = [
+                { label: 'Kalórie',    value: macros.calories, unit: 'kcal', max: maxCal },
+                { label: 'Bielkoviny', value: macros.protein,  unit: 'g',    max: 200 },
+                { label: 'Sacharidy',  value: macros.carbs,    unit: 'g',    max: 300 },
+                { label: 'Tuky',       value: macros.fat,      unit: 'g',    max: 100 },
+                { label: 'Vláknina',   value: macros.fiber,    unit: 'g',    max: 40  },
+              ];
+              return rows.map(({ label, value, unit, max }) => (
+                <div key={label} style={{ marginBottom: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
+                    <span style={{ fontFamily: "'Alike', serif", fontSize: 12, color: OLIVE }}>{label}</span>
+                    <span style={{ fontFamily: "'Alike', serif", fontSize: 12, color: OLIVE, opacity: 0.7 }}>
+                      {value} {unit}
+                    </span>
+                  </div>
+                  <div style={{ height: 4, borderRadius: 4, background: 'rgba(104,104,3,0.1)', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 4,
+                      background: `linear-gradient(to right, ${YELLOW}, #B8BA3A)`,
+                      width: `${Math.min((value / max) * 100, 100)}%`,
+                      transition: 'width 0.6s ease',
+                    }} />
+                  </div>
+                </div>
+              ));
+            })()}
+
+            {!macrosLoading && !macros && (
+              <p style={{ fontFamily: "'Alike', serif", fontSize: 11, color: OLIVE, opacity: 0.4, textAlign: 'center' }}>
+                Pridaj ingrediencie pre výpočet hodnôt
+              </p>
+            )}
+
+            <p style={{ fontFamily: "'Alike', serif", fontSize: 9, color: OLIVE, opacity: 0.3, marginTop: 14, textAlign: 'center' }}>
+              Dáta: Open Food Facts & USDA
             </p>
           </div>
         )}
@@ -486,19 +530,34 @@ export default function RecipeDetail() {
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontFamily: "'Alike', serif" }}>+</span>
           </div>
 
+          {/* Error message */}
+          {uploadError && (
+            <div style={{
+              padding: '0 24px 8px',
+              fontFamily: "'Alike', serif", fontSize: 12,
+              color: '#ffb4b4', textAlign: 'center',
+            }}>
+              {uploadError}
+            </div>
+          )}
+
           {/* Buttons */}
           <div style={{ display: 'flex', gap: 12, padding: '8px 24px 32px' }}>
-            <button onClick={() => setCropSrc(null)} style={{
+            <button onClick={() => setCropSrc(null)} disabled={uploading} style={{
               flex: 1, padding: '12px 0', borderRadius: 27,
-              background: 'rgba(255,255,255,0.1)', border: 'none', cursor: 'pointer',
+              background: 'rgba(255,255,255,0.1)', border: 'none',
+              cursor: uploading ? 'not-allowed' : 'pointer',
               fontFamily: "'Alike', serif", fontSize: 14, color: 'white',
+              opacity: uploading ? 0.5 : 1,
             }}>Zrušiť</button>
-            <button onClick={confirmCrop} style={{
+            <button onClick={confirmCrop} disabled={uploading} style={{
               flex: 1, padding: '12px 0', borderRadius: 27,
-              background: YELLOW, border: 'none', cursor: 'pointer',
+              background: YELLOW, border: 'none',
+              cursor: uploading ? 'not-allowed' : 'pointer',
               fontFamily: "'Alike', serif", fontSize: 14, color: OLIVE,
               boxShadow: '0 2px 8px rgba(104,104,3,0.3)',
-            }}>Potvrdiť</button>
+              opacity: uploading ? 0.7 : 1,
+            }}>{uploading ? 'Nahrávam…' : 'Potvrdiť'}</button>
           </div>
         </div>
       )}

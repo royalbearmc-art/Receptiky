@@ -9,6 +9,14 @@ export interface Step {
   timer_minutes: number | null;
 }
 
+export interface Macros {
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  fiber: number;
+}
+
 export interface Recipe {
   id: string;
   title: string;
@@ -17,6 +25,7 @@ export interface Recipe {
   tags: string[];
   ingredients: Ingredient[];
   steps: Step[];
+  cached_macros: Macros | null;
   created_at: string;
   updated_at: string;
 }

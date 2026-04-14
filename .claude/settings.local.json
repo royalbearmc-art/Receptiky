@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls C:/Users/u3iko/Documents/recipe-app/*.sql)",
+      "Bash(npx tsc:*)",
+      "Bash(ls .claude)",
+      "Bash(cat .claude/launch.json)",
+      "Bash(echo \"exit=$?\")"
+    ]
+  }
+}
