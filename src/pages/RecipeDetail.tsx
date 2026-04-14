@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Cropper from 'react-easy-crop';
 import type { Area } from 'react-easy-crop';
 import { useRecipes } from '../lib/RecipesContext';
+import { useT } from '../lib/i18n';
 import { uploadRecipeImage } from '../lib/uploadImage';
 import { calculateRecipeMacros } from '../lib/macros';
 import type { Recipe, Ingredient, Macros } from '../lib/types';
@@ -36,6 +37,7 @@ const YELLOW = '#D9D95D';
 
 const emptyRecipe: Recipe = {
   id: 'new',
+  user_id: '', // stamped on insert by RecipesContext
   title: '',
   description: null,
   photo_url: null,
@@ -50,7 +52,8 @@ const emptyRecipe: Recipe = {
 export default function RecipeDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { recipes, updateRecipe, addRecipe } = useRecipes();
+  const { recipes, updateRecipe, addRecipe, deleteRecipe } = useRecipes();
+  const { t } = useT();
   const isNew = id === 'new';
 
   const found = recipes.find((r) => r.id === id);
@@ -68,6 +71,10 @@ export default function RecipeDetail() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [macros, setMacros] = useState<Macros | null>(recipe.cached_macros ?? null);
   const [macrosLoading, setMacrosLoading] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (isEditing || isNew || macros) return;
@@ -112,7 +119,7 @@ export default function RecipeDetail() {
       setCropSrc(null);
     } catch (e) {
       console.error('Crop/upload failed:', e);
-      setUploadError(e instanceof Error ? e.message : 'Nahrávanie zlyhalo.');
+      setUploadError(e instanceof Error ? e.message : t('detail.crop.error'));
     } finally {
       setUploading(false);
     }
@@ -121,7 +128,7 @@ export default function RecipeDetail() {
   if (!isNew && !found) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 800 }}>
-        <p style={{ color: '#aaa' }}>Recipe not found.</p>
+        <p style={{ color: '#aaa' }}>{t('detail.not-found')}</p>
       </div>
     );
   }
@@ -146,7 +153,7 @@ export default function RecipeDetail() {
     setRecipe((r) => ({ ...r, steps: r.steps.filter((_, idx) => idx !== i) }));
 
   const addTag = () => {
-    const tag = prompt('Nový tag:');
+    const tag = prompt(t('detail.new-tag'));
     if (tag) setRecipe((r) => ({ ...r, tags: [...r.tags, tag.trim()] }));
   };
 
@@ -176,7 +183,7 @@ export default function RecipeDetail() {
         <input
           value={recipe.title}
           onChange={(e) => setRecipe((r) => ({ ...r, title: e.target.value }))}
-          placeholder="Názov receptu..."
+          placeholder={t('detail.title-placeholder')}
           style={{
             fontFamily: "'Srisakdi', cursive", fontSize: 26,
             color: OLIVE, textAlign: 'center',
@@ -233,7 +240,7 @@ export default function RecipeDetail() {
             fontFamily: "'Alike', serif", fontSize: 11, color: OLIVE,
             background: 'rgba(217,217,93,0.4)', borderRadius: 20, padding: '4px 10px',
             border: `1px dashed ${OLIVE}`, cursor: 'pointer', flexShrink: 0,
-          }}>+ tag</button>
+          }}>{t('detail.add-tag')}</button>
         )}
 
         <div style={{ flex: 1 }} />
@@ -253,14 +260,90 @@ export default function RecipeDetail() {
         <div style={{
           position: 'absolute', right: 9, top: 70, zIndex: 99,
           background: '#F5F8D6', borderRadius: 12, padding: '6px 0',
-          boxShadow: '0 4px 16px rgba(104,104,3,0.15)', minWidth: 150,
+          boxShadow: '0 4px 16px rgba(104,104,3,0.15)', minWidth: 170,
           border: '1px solid rgba(104,104,3,0.1)',
         }}>
           <button onClick={() => { setIsEditing(true); setShowMenu(false); }} style={{
             display: 'block', width: '100%', padding: '10px 16px',
             fontFamily: "'Alike', serif", fontSize: 13, color: OLIVE,
             background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
-          }}>✏️ Upraviť recept</button>
+            borderBottom: '1px solid rgba(104,104,3,0.08)',
+          }}>{t('detail.edit')}</button>
+          {!isNew && (
+            <button onClick={() => { setConfirmDelete(true); setShowMenu(false); }} style={{
+              display: 'block', width: '100%', padding: '10px 16px',
+              fontFamily: "'Alike', serif", fontSize: 13, color: '#a33',
+              background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+            }}>{t('detail.delete')}</button>
+          )}
+        </div>
+      )}
+
+      {/* Delete confirmation modal */}
+      {confirmDelete && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 300,
+          background: 'rgba(0,0,0,0.55)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '0 32px',
+        }}>
+          <div style={{
+            background: '#FAFEEB',
+            borderRadius: 18,
+            padding: '24px 22px 20px',
+            width: '100%',
+            maxWidth: 320,
+            boxShadow: '0 10px 40px rgba(0,0,0,0.35)',
+          }}>
+            <p style={{
+              fontFamily: "'Srisakdi', cursive",
+              fontSize: 20, color: OLIVE,
+              textAlign: 'center', margin: 0, marginBottom: 18,
+              letterSpacing: '0.01em', lineHeight: '125%',
+            }}>
+              {t('detail.delete.confirm')}
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                disabled={deleting}
+                style={{
+                  flex: 1, padding: '11px 0', borderRadius: 22,
+                  background: 'rgba(104,104,3,0.08)',
+                  border: 'none',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  fontFamily: "'Alike', serif", fontSize: 13, color: OLIVE,
+                }}
+              >
+                {t('detail.delete.no')}
+              </button>
+              <button
+                onClick={async () => {
+                  if (deleting) return;
+                  setDeleting(true);
+                  try {
+                    await deleteRecipe(recipe.id);
+                    navigate('/recipes');
+                  } catch (e) {
+                    console.error('Delete failed:', e);
+                    setDeleting(false);
+                    setConfirmDelete(false);
+                  }
+                }}
+                disabled={deleting}
+                style={{
+                  flex: 1, padding: '11px 0', borderRadius: 22,
+                  background: '#a33',
+                  border: 'none',
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  fontFamily: "'Alike', serif", fontSize: 13, color: '#fff',
+                  opacity: deleting ? 0.7 : 1,
+                }}
+              >
+                {deleting ? '…' : t('detail.delete.yes')}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -273,7 +356,7 @@ export default function RecipeDetail() {
           if (total === 0) return null;
           const h = Math.floor(total / 60);
           const m = total % 60;
-          const label = h > 0 ? `${h} hod ${m > 0 ? m + ' min' : ''}`.trim() : `${m} min`;
+          const label = h > 0 ? `${h} ${t('detail.time.hours')} ${m > 0 ? m + ' ' + t('detail.time.minutes') : ''}`.trim() : `${m} ${t('detail.time.minutes')}`;
           return (
             <div style={{ marginBottom: 14 }}>
               <p style={{ fontFamily: "'Alike', serif", fontSize: 12, color: OLIVE, opacity: 0.7, marginBottom: 10, letterSpacing: '0.02em' }}>
@@ -293,11 +376,11 @@ export default function RecipeDetail() {
                 {isEditing ? (
                   <>
                     <input value={ing.amount} onChange={(e) => updIng(i, 'amount', e.target.value)}
-                      placeholder="Mn." style={{ ...inputStyle, width: 36 }} />
+                      placeholder={t('detail.ing.amount')} style={{ ...inputStyle, width: 36 }} />
                     <input value={ing.unit} onChange={(e) => updIng(i, 'unit', e.target.value)}
-                      placeholder="jedn." style={{ ...inputStyle, width: 52 }} />
+                      placeholder={t('detail.ing.unit')} style={{ ...inputStyle, width: 52 }} />
                     <input value={ing.name} onChange={(e) => updIng(i, 'name', e.target.value)}
-                      placeholder="Ingrediencia" style={{ ...inputStyle, flex: 1 }} />
+                      placeholder={t('detail.ing.name')} style={{ ...inputStyle, flex: 1 }} />
                     <button onClick={() => removeIng(i)} style={{
                       background: 'none', border: 'none', cursor: 'pointer',
                       fontSize: 14, color: '#bbb', padding: 0, flexShrink: 0,
@@ -318,7 +401,7 @@ export default function RecipeDetail() {
                 background: 'none', border: 'none', cursor: 'pointer',
                 fontFamily: "'Alike', serif", fontSize: 11, color: OLIVE, padding: 0,
               }}>
-                <img src="/plus.png" alt="+" style={{ width: 18, height: 18 }} /> ingrediencia
+                <img src="/plus.png" alt="+" style={{ width: 18, height: 18 }} /> {t('detail.ing.add')}
               </button>
             )}
           </div>
@@ -344,7 +427,7 @@ export default function RecipeDetail() {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14,
               }}>
                 {/* Camera — change image */}
-                <label style={{ cursor: 'pointer', fontSize: 26, lineHeight: 1 }} title="Zmeniť fotku">
+                <label style={{ cursor: 'pointer', fontSize: 26, lineHeight: 1 }} title={t('detail.photo.change')}>
                   📷
                   <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
                 </label>
@@ -358,7 +441,7 @@ export default function RecipeDetail() {
                     fontSize: 22, lineHeight: 1, padding: 0,
                     opacity: previewUrl ? 1 : 0.4,
                   }}
-                  title="Orezať"
+                  title={t('detail.photo.crop')}
                 >✂️</button>
               </div>
             )}
@@ -378,7 +461,7 @@ export default function RecipeDetail() {
               {isEditing ? (
                 <div style={{ display: 'flex', gap: 4 }}>
                   <textarea value={step.text} onChange={(e) => updStep(i, e.target.value)}
-                    placeholder="Krok..."
+                    placeholder={t('detail.step.placeholder')}
                     style={{ ...inputStyle, resize: 'none', minHeight: 48, lineHeight: '155%' }}
                   />
                   <button onClick={() => removeStep(i)} style={{
@@ -394,7 +477,7 @@ export default function RecipeDetail() {
                   {step.timer_minutes && (
                     <span style={{ display: 'inline-block', marginTop: 4, fontSize: 11, color: OLIVE,
                       background: '#E8EAA0', padding: '2px 9px', borderRadius: 10 }}>
-                      ⏱ {step.timer_minutes} min
+                      ⏱ {step.timer_minutes} {t('detail.time.minutes')}
                     </span>
                   )}
                 </>
@@ -410,7 +493,7 @@ export default function RecipeDetail() {
             background: 'none', border: 'none', cursor: 'pointer',
             fontFamily: "'Alike', serif", fontSize: 11, color: OLIVE, padding: 0, marginBottom: 20,
           }}>
-            <img src="/plus.png" alt="+" style={{ width: 18, height: 18 }} /> krok
+            <img src="/plus.png" alt="+" style={{ width: 18, height: 18 }} /> {t('detail.step.add')}
           </button>
         )}
 
@@ -420,23 +503,23 @@ export default function RecipeDetail() {
             <div style={{ borderTop: `1.5px solid ${OLIVE}`, opacity: 0.18, marginBottom: 20 }} />
 
             <p style={{ fontFamily: "'Srisakdi', cursive", fontSize: 18, color: OLIVE, marginBottom: 16, letterSpacing: '0.01em' }}>
-              Výživové hodnoty
+              {t('detail.macros.title')}
             </p>
 
             {macrosLoading && (
               <p style={{ fontFamily: "'Alike', serif", fontSize: 12, color: OLIVE, opacity: 0.5, textAlign: 'center', marginBottom: 16 }}>
-                Počítam výživové hodnoty…
+                {t('detail.macros.loading')}
               </p>
             )}
 
             {!macrosLoading && macros && (() => {
               const maxCal = 2000;
               const rows = [
-                { label: 'Kalórie',    value: macros.calories, unit: 'kcal', max: maxCal },
-                { label: 'Bielkoviny', value: macros.protein,  unit: 'g',    max: 200 },
-                { label: 'Sacharidy',  value: macros.carbs,    unit: 'g',    max: 300 },
-                { label: 'Tuky',       value: macros.fat,      unit: 'g',    max: 100 },
-                { label: 'Vláknina',   value: macros.fiber,    unit: 'g',    max: 40  },
+                { label: t('detail.macros.calories'), value: macros.calories, unit: 'kcal', max: maxCal },
+                { label: t('detail.macros.protein'),  value: macros.protein,  unit: 'g',    max: 200 },
+                { label: t('detail.macros.carbs'),    value: macros.carbs,    unit: 'g',    max: 300 },
+                { label: t('detail.macros.fat'),      value: macros.fat,      unit: 'g',    max: 100 },
+                { label: t('detail.macros.fiber'),    value: macros.fiber,    unit: 'g',    max: 40  },
               ];
               return rows.map(({ label, value, unit, max }) => (
                 <div key={label} style={{ marginBottom: 12 }}>
@@ -460,36 +543,64 @@ export default function RecipeDetail() {
 
             {!macrosLoading && !macros && (
               <p style={{ fontFamily: "'Alike', serif", fontSize: 11, color: OLIVE, opacity: 0.4, textAlign: 'center' }}>
-                Pridaj ingrediencie pre výpočet hodnôt
+                {t('detail.macros.empty-hint')}
               </p>
             )}
 
             <p style={{ fontFamily: "'Alike', serif", fontSize: 9, color: OLIVE, opacity: 0.3, marginTop: 14, textAlign: 'center' }}>
-              Dáta: Open Food Facts & USDA
+              {t('detail.macros.source')}
             </p>
           </div>
         )}
 
         {/* Save button in edit mode */}
         {isEditing && (
-          <button onClick={() => {
-            const saved = { ...recipe, updated_at: new Date().toISOString() };
-            if (isNew) {
-              const newId = Date.now().toString();
-              addRecipe({ ...saved, id: newId, created_at: new Date().toISOString() });
-            } else {
-              updateRecipe(saved);
-            }
-            setIsEditing(false);
-            setShowMenu(false);
-          }} style={{
-            width: '100%', padding: '12px 0', borderRadius: 27,
-            background: YELLOW, border: 'none', cursor: 'pointer',
-            fontFamily: "'Alike', serif", fontSize: 14, color: OLIVE,
-            boxShadow: '0px 2px 5px 0px rgba(152,152,12,0.22)', marginTop: 8,
-          }}>
-            Uložiť
-          </button>
+          <>
+            {saveError && (
+              <p style={{
+                fontFamily: "'Alike', serif", fontSize: 12,
+                color: '#a33', textAlign: 'center', margin: '8px 0 0',
+              }}>
+                {saveError}
+              </p>
+            )}
+            <button
+              disabled={saving}
+              onClick={async () => {
+                setSaveError(null);
+                setSaving(true);
+                const payload = { ...recipe, updated_at: new Date().toISOString() };
+                try {
+                  if (isNew) {
+                    const saved = await addRecipe({ ...payload, created_at: new Date().toISOString() });
+                    navigate(`/recipes/${saved.id}`, { replace: true });
+                  } else {
+                    await updateRecipe(payload);
+                    setIsEditing(false);
+                    setShowMenu(false);
+                  }
+                } catch (e) {
+                  const msg =
+                    e instanceof Error ? e.message :
+                    (e && typeof e === 'object' && 'message' in e) ? String((e as { message: unknown }).message) :
+                    JSON.stringify(e);
+                  setSaveError(msg);
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              style={{
+                width: '100%', padding: '12px 0', borderRadius: 27,
+                background: YELLOW, border: 'none',
+                cursor: saving ? 'not-allowed' : 'pointer',
+                fontFamily: "'Alike', serif", fontSize: 14, color: OLIVE,
+                boxShadow: '0px 2px 5px 0px rgba(152,152,12,0.22)',
+                marginTop: 8, opacity: saving ? 0.7 : 1,
+              }}
+            >
+              {saving ? '…' : t('detail.save')}
+            </button>
+          </>
         )}
 
       </div>
@@ -549,7 +660,7 @@ export default function RecipeDetail() {
               cursor: uploading ? 'not-allowed' : 'pointer',
               fontFamily: "'Alike', serif", fontSize: 14, color: 'white',
               opacity: uploading ? 0.5 : 1,
-            }}>Zrušiť</button>
+            }}>{t('detail.crop.cancel')}</button>
             <button onClick={confirmCrop} disabled={uploading} style={{
               flex: 1, padding: '12px 0', borderRadius: 27,
               background: YELLOW, border: 'none',
@@ -557,7 +668,7 @@ export default function RecipeDetail() {
               fontFamily: "'Alike', serif", fontSize: 14, color: OLIVE,
               boxShadow: '0 2px 8px rgba(104,104,3,0.3)',
               opacity: uploading ? 0.7 : 1,
-            }}>{uploading ? 'Nahrávam…' : 'Potvrdiť'}</button>
+            }}>{uploading ? t('detail.crop.uploading') : t('detail.crop.confirm')}</button>
           </div>
         </div>
       )}

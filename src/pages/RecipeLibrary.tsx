@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecipes } from '../lib/RecipesContext';
+import { useT } from '../lib/i18n';
 import type { Recipe } from '../lib/types';
 
 const BG_GRADIENT = 'linear-gradient(to bottom, #D9D95D 0%, #E3E488 26%, #EBEDA9 49%, #F3F6CC 75%, #FAFEEB 100%) top / 100% 112px no-repeat, #FAFEEB';
@@ -15,17 +16,19 @@ type ViewMode = 'grid' | 'tags';
 const totalMinutes = (r: Recipe) =>
   r.steps.reduce((sum, s) => sum + (s.timer_minutes ?? 0), 0);
 
-const SORT_LABELS: Record<SortMode, string> = {
-  'alpha': 'A–Z',
-  'last-edited': 'Naposledy upravené',
-  'first-edited': 'Najskôr pridané',
-  'duration': 'Čas prípravy',
-};
-
 export default function RecipeLibrary() {
   const navigate = useNavigate();
   const { recipes } = useRecipes();
+  const { t } = useT();
+
+  const SORT_LABELS: Record<SortMode, string> = {
+    'alpha': t('library.sort.alpha'),
+    'last-edited': t('library.sort.last-edited'),
+    'first-edited': t('library.sort.first-edited'),
+    'duration': t('library.sort.duration'),
+  };
   const [sortMode, setSortMode] = useState<SortMode>('alpha');
+  const [sortDir, setSortDir] = useState<1 | -1>(1); // 1 = asc, -1 = desc
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [showViewMenu, setShowViewMenu] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -33,32 +36,32 @@ export default function RecipeLibrary() {
 
   /* ── sorting ── */
   const sorted = [...recipes].sort((a, b) => {
-    if (sortMode === 'alpha') return a.title.localeCompare(b.title);
-    if (sortMode === 'last-edited') return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
-    if (sortMode === 'first-edited') return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-    if (sortMode === 'duration') return totalMinutes(a) - totalMinutes(b);
-    return 0;
+    let cmp = 0;
+    if (sortMode === 'alpha') cmp = a.title.localeCompare(b.title);
+    else if (sortMode === 'last-edited') cmp = new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+    else if (sortMode === 'first-edited') cmp = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    else if (sortMode === 'duration') cmp = totalMinutes(a) - totalMinutes(b);
+    return cmp * sortDir;
   });
 
   /* ── tag grouping ── */
   const allTags = [...new Set(recipes.flatMap((r) => r.tags))].sort((a, b) => {
-    if (sortMode === 'alpha') return a.localeCompare(b);
-    if (sortMode === 'last-edited') {
+    let cmp = 0;
+    if (sortMode === 'alpha') cmp = a.localeCompare(b);
+    else if (sortMode === 'last-edited') {
       const latestA = Math.max(...recipes.filter(r => r.tags.includes(a)).map(r => new Date(r.updated_at).getTime()));
       const latestB = Math.max(...recipes.filter(r => r.tags.includes(b)).map(r => new Date(r.updated_at).getTime()));
-      return latestB - latestA;
-    }
-    if (sortMode === 'first-edited') {
+      cmp = latestB - latestA;
+    } else if (sortMode === 'first-edited') {
       const oldestA = Math.min(...recipes.filter(r => r.tags.includes(a)).map(r => new Date(r.created_at).getTime()));
       const oldestB = Math.min(...recipes.filter(r => r.tags.includes(b)).map(r => new Date(r.created_at).getTime()));
-      return oldestA - oldestB;
-    }
-    if (sortMode === 'duration') {
+      cmp = oldestA - oldestB;
+    } else if (sortMode === 'duration') {
       const avgA = recipes.filter(r => r.tags.includes(a)).reduce((s, r) => s + totalMinutes(r), 0);
       const avgB = recipes.filter(r => r.tags.includes(b)).reduce((s, r) => s + totalMinutes(r), 0);
-      return avgA - avgB;
+      cmp = avgA - avgB;
     }
-    return 0;
+    return cmp * sortDir;
   });
   const recipesByTag = (tag: string) => sorted.filter((r) => r.tags.includes(tag));
 
@@ -114,7 +117,7 @@ export default function RecipeLibrary() {
                 background: viewMode === 'grid' ? '#F9FDEA' : 'none',
                 border: 'none', borderBottom: '1px solid #F0F2C0', cursor: 'pointer', textAlign: 'left', gap: 8,
               }}>
-              Všetky recepty
+              {t('library.view.all')}
               {viewMode === 'grid' && <span style={{ fontSize: 10 }}>✓</span>}
             </button>
             <button onClick={() => { setViewMode('tags'); setSelectedTag(null); setShowViewMenu(false); }}
@@ -125,7 +128,7 @@ export default function RecipeLibrary() {
                 background: viewMode === 'tags' ? '#F9FDEA' : 'none',
                 border: 'none', cursor: 'pointer', textAlign: 'left', gap: 8,
               }}>
-              Podľa tagov
+              {t('library.view.tags')}
               {viewMode === 'tags' && <span style={{ fontSize: 10 }}>✓</span>}
             </button>
           </div>
@@ -143,7 +146,15 @@ export default function RecipeLibrary() {
             border: '1px solid rgba(104,104,3,0.1)',
           }}>
             {(Object.entries(SORT_LABELS) as [SortMode, string][]).map(([mode, label]) => (
-              <button key={mode} onClick={() => { setSortMode(mode); setShowSortMenu(false); }}
+              <button key={mode} onClick={() => {
+                if (sortMode === mode) {
+                  setSortDir((d) => d === 1 ? -1 : 1);
+                } else {
+                  setSortMode(mode);
+                  setSortDir(1);
+                }
+                setShowSortMenu(false);
+              }}
                 style={{
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   width: '100%', padding: '10px 16px',
@@ -152,7 +163,7 @@ export default function RecipeLibrary() {
                   border: 'none', cursor: 'pointer', textAlign: 'left', gap: 8,
                 }}>
                 {label}
-                {sortMode === mode && <span style={{ fontSize: 10 }}>✓</span>}
+                {sortMode === mode && <span style={{ fontSize: 12 }}>{sortDir === 1 ? '↑' : '↓'}</span>}
               </button>
             ))}
           </div>
@@ -166,7 +177,7 @@ export default function RecipeLibrary() {
         fontSize: 29.4, lineHeight: '121.2%',
         letterSpacing: '0.01em', fontWeight: 400, color: TEXT_COLOR,
       }}>
-        {selectedTag ? selectedTag : 'Receptíky'}
+        {selectedTag ? selectedTag : t('library.title')}
       </h1>
 
 
@@ -195,7 +206,7 @@ export default function RecipeLibrary() {
                 <span style={{
                   fontSize: 9, color: TEXT_COLOR, opacity: 0.6,
                   fontFamily: "'Alike', serif",
-                }}>{recipesByTag(tag).length} receptov</span>
+                }}>{recipesByTag(tag).length} {t('library.count.recipes')}</span>
               </button>
             ))}
           </div>
@@ -204,17 +215,19 @@ export default function RecipeLibrary() {
         {/* GRID VIEW — normal or filtered by tag */}
         {(viewMode === 'grid' || selectedTag) && visibleRecipes.length === 0 && (
           <div style={{
-            position: 'fixed', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            marginTop: 180,
+            textAlign: 'center',
             pointerEvents: 'none',
+            userSelect: 'none',
           }}>
             <p style={{
               fontFamily: "'Srisakdi', cursive",
               fontSize: 22, color: TEXT_COLOR,
-              opacity: 0.5, textAlign: 'center',
+              opacity: 0.35, textAlign: 'center',
               lineHeight: '140%', padding: '0 32px',
+              margin: 0,
             }}>
-              Zatiaľ nemáš<br />žiadne receptíky
+              {t('library.empty.line1')}<br />{t('library.empty.line2')}
             </p>
           </div>
         )}

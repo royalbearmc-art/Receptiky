@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useT } from '../lib/i18n';
 
 const BG_GRADIENT = 'linear-gradient(to top, #D9D95D 0%, #E3E488 26%, #EBEDA9 49%, #F3F6CC 75%, #FAFEEB 100%) bottom / 100% 76px no-repeat, #FAFEEB';
 
@@ -17,6 +18,7 @@ const BTN: React.CSSProperties = {
 
 export default function Cover() {
   const navigate = useNavigate();
+  const { t } = useT();
 
   return (
     <div style={{
@@ -34,7 +36,7 @@ export default function Cover() {
       {/* Flower */}
       <img
         src="/cover-flower.png"
-        alt="Moje receptíky"
+        alt={t('cover.title')}
         style={{
           width: '100%',
           maxWidth: 362,
@@ -57,18 +59,35 @@ export default function Cover() {
         marginBottom: 32,
         padding: '0 24px',
       }}>
-        Moje receptíky
+        {t('cover.title')}
       </h1>
 
       {/* Buttons — kept together with original spacing */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10.76, alignItems: 'center' }}>
         <button onClick={() => navigate('/recipes')} className="btn-pulse" style={BTN}>
-          Recepty
+          {t('cover.recipes')}
         </button>
         <button onClick={() => navigate('/calendar')} className="btn-pulse" style={BTN}>
-          Kalendár
+          {t('cover.calendar')}
         </button>
       </div>
+
+      {/* Settings gear — top right corner, navigates to /settings */}
+      <img
+        src="/settings.png"
+        alt={t('cover.settings')}
+        onClick={() => navigate('/settings')}
+        style={{
+          position: 'absolute',
+          top: 18,
+          right: 18,
+          width: 34.86,
+          height: 34.86,
+          objectFit: 'contain',
+          cursor: 'pointer',
+          zIndex: 100,
+        }}
+      />
 
     </div>
   );

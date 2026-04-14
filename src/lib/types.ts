@@ -19,6 +19,7 @@ export interface Macros {
 
 export interface Recipe {
   id: string;
+  user_id: string;
   title: string;
   description: string | null;
   photo_url: string | null;

@@ -3,6 +3,8 @@ import type { Recipe } from './types';
 export const mockRecipes: Recipe[] = [
   {
     id: '1',
+    user_id: 'mock',
+    cached_macros: null,
     title: 'Scrambled Eggs',
     description: 'Simple and fluffy scrambled eggs.',
     photo_url: null,
@@ -24,6 +26,8 @@ export const mockRecipes: Recipe[] = [
   },
   {
     id: '2',
+    user_id: 'mock',
+    cached_macros: null,
     title: 'Pasta Carbonara',
     description: 'Classic Roman pasta with eggs, cheese, and pancetta.',
     photo_url: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600',
@@ -46,6 +50,8 @@ export const mockRecipes: Recipe[] = [
   },
   {
     id: '3',
+    user_id: 'mock',
+    cached_macros: null,
     title: 'Nepečený kolač z červenej repy',
     description: 'No-bake beetroot cake.',
     photo_url: null,

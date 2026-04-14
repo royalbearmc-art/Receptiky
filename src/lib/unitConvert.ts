@@ -11,7 +11,7 @@ const PCS_WEIGHT_G: Record<string, number> = {
   peach: 150, plum: 60, apricot: 40,
 };
 
-const UNIT_TO_G: Record<string, number> = {
+const UNIT_TO_G: Record<string, number | null> = {
   // weight
   g: 1, gr: 1, gram: 1, gramy: 1, gramov: 1,
   kg: 1000, dkg: 10,
