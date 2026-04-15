@@ -144,12 +144,12 @@ export default function Calendar() {
       {/* Header */}
       <p style={{
         fontFamily: "'Srisakdi', cursive", fontSize: 29.4, color: OLIVE,
-        textAlign: 'center', paddingTop: 20, letterSpacing: '0.01em', lineHeight: '121.2%',
+        textAlign: 'center', paddingTop: 24, letterSpacing: '0.01em', lineHeight: '121.2%',
       }}>Kalendár</p>
 
       {/* Nav bar */}
       <div style={{
-        margin: '10px 9px 0', height: 43, borderRadius: 35,
+        margin: '44px 9px 0', height: 43, borderRadius: 35,
         background: 'rgba(243,246,204,0.5)',
         backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
         boxShadow: '0 2px 8px rgba(104,104,3,0.12), inset 0 1px 0 rgba(255,255,255,0.4)',
@@ -189,8 +189,9 @@ export default function Calendar() {
                   <div key={ds}
                     onClick={() => setSelectedDate(isSelected ? null : ds)}
                     style={{
-                      flex: 1, borderRadius: 14, padding: '12px 6px',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                      flex: 1, borderRadius: 14, padding: '22px 6px',
+                      minHeight: 160,
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
                       cursor: 'pointer',
                       background: isSelected ? 'rgba(217,217,93,0.35)' : 'rgba(255,255,255,0.45)',
                       border: isSelected ? `1.5px solid ${YELLOW}` : '1.5px solid transparent',
