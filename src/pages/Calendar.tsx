@@ -52,7 +52,7 @@ type CalView = 'week' | 'month';
 
 export default function Calendar() {
   const navigate = useNavigate();
-  const { entries, addEntry, removeEntry, entriesForDate } = useCalendar();
+  const { addEntry, removeEntry, entriesForDate } = useCalendar();
   const { recipes } = useRecipes();
 
   const [view, setView] = useState<CalView>('week');
