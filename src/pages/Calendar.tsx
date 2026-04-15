@@ -134,22 +134,22 @@ export default function Calendar() {
   return (
     <div style={{ background: BG, width: '100%', minHeight: '100dvh', paddingBottom: 80, position: 'relative' }}>
 
-      {/* Back to home */}
-      <img
-        src="/späť.png" alt="Späť"
-        onClick={() => navigate('/')}
-        style={{ position: 'absolute', left: 22, top: 52, width: 31, height: 31, cursor: 'pointer', objectFit: 'contain' }}
-      />
-
-      {/* Header */}
-      <p style={{
-        fontFamily: "'Srisakdi', cursive", fontSize: 29.4, color: OLIVE,
-        textAlign: 'center', paddingTop: 24, letterSpacing: '0.01em', lineHeight: '121.2%',
-      }}>Kalendár</p>
+      {/* Header block — fixed height so nav bar never overlaps back button */}
+      <div style={{ height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+        <img
+          src="/späť.png" alt="Späť"
+          onClick={() => navigate('/')}
+          style={{ position: 'absolute', left: 22, width: 31, height: 31, cursor: 'pointer', objectFit: 'contain' }}
+        />
+        <p style={{
+          fontFamily: "'Srisakdi', cursive", fontSize: 29.4, color: OLIVE,
+          textAlign: 'center', margin: 0, letterSpacing: '0.01em', lineHeight: '121.2%',
+        }}>Kalendár</p>
+      </div>
 
       {/* Nav bar */}
       <div style={{
-        margin: '44px 9px 0', height: 43, borderRadius: 35,
+        margin: '0 9px', height: 43, borderRadius: 35,
         background: 'rgba(243,246,204,0.5)',
         backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
         boxShadow: '0 2px 8px rgba(104,104,3,0.12), inset 0 1px 0 rgba(255,255,255,0.4)',
