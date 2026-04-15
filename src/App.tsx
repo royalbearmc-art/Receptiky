@@ -12,7 +12,6 @@ import ResetPassword from './pages/ResetPassword';
 import { RecipesProvider } from './lib/RecipesContext';
 import { CalendarProvider } from './lib/CalendarContext';
 import { LanguageProvider } from './lib/i18n';
-import BottomNav from './components/BottomNav';
 import Calendar from './pages/Calendar';
 
 const SHELL_STYLE: React.CSSProperties = {
@@ -93,7 +92,6 @@ export default function App() {
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
-              <BottomNav />
             </div>
           </BrowserRouter>
         </CalendarProvider>
