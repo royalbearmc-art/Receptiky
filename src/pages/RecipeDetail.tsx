@@ -573,6 +573,8 @@ export default function RecipeDetail() {
                 try {
                   if (isNew) {
                     const saved = await addRecipe({ ...payload, created_at: new Date().toISOString() });
+                    setRecipe(saved);       // replace 'new' id with real UUID in local state
+                    setIsEditing(false);    // exit edit mode before macros effect fires
                     navigate(`/recipes/${saved.id}`, { replace: true });
                   } else {
                     await updateRecipe(payload);
