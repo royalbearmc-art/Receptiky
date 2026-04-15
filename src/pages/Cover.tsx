@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useT } from '../lib/i18n';
+import CoverNew from './CoverNew';
 
 const BG_GRADIENT = 'linear-gradient(to top, #D9D95D 0%, #E3E488 26%, #EBEDA9 49%, #F3F6CC 75%, #FAFEEB 100%) bottom / 100% 76px no-repeat, #FAFEEB';
 
@@ -18,7 +19,9 @@ const BTN: React.CSSProperties = {
 
 export default function Cover() {
   const navigate = useNavigate();
-  const { t } = useT();
+  const { t, coverTheme } = useT();
+
+  if (coverTheme === 'new') return <CoverNew />;
 
   return (
     <div style={{

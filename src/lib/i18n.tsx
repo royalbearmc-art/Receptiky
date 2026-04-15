@@ -87,6 +87,9 @@ const sk: Dict = {
   'settings.appearance.language': 'Jazyk',
   'settings.about': 'O aplikácii',
   'settings.about.version': 'Verzia',
+  'settings.appearance.cover': 'Titulná strana',
+  'settings.appearance.cover.classic': 'Klasická',
+  'settings.appearance.cover.new': 'Nová',
   'settings.more-coming': 'Viac nastavení čoskoro',
 
   // Reset password page
@@ -184,6 +187,9 @@ const en: Dict = {
   'settings.appearance.language': 'Language',
   'settings.about': 'About',
   'settings.about.version': 'Version',
+  'settings.appearance.cover': 'Cover design',
+  'settings.appearance.cover.classic': 'Classic',
+  'settings.appearance.cover.new': 'New',
   'settings.more-coming': 'More settings coming soon',
 
   // Reset password page
@@ -200,10 +206,14 @@ const en: Dict = {
 
 const dictionaries: Record<Lang, Dict> = { sk, en };
 
+export type CoverTheme = 'classic' | 'new';
+
 interface LangCtx {
   lang: Lang;
   setLang: (l: Lang) => void;
   t: (key: string) => string;
+  coverTheme: CoverTheme;
+  setCoverTheme: (t: CoverTheme) => void;
 }
 
 const LanguageContext = createContext<LangCtx | null>(null);
@@ -215,6 +225,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return saved === 'en' || saved === 'sk' ? saved : 'sk';
   });
 
+  const [coverTheme, setCoverThemeState] = useState<CoverTheme>(() => {
+    if (typeof window === 'undefined') return 'classic';
+    const saved = localStorage.getItem('coverTheme');
+    return saved === 'new' ? 'new' : 'classic';
+  });
+
   useEffect(() => {
     localStorage.setItem('lang', lang);
     document.documentElement.lang = lang;
@@ -223,8 +239,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const setLang = (l: Lang) => setLangState(l);
   const t = (key: string) => dictionaries[lang][key] ?? key;
 
+  const setCoverTheme = (theme: CoverTheme) => {
+    setCoverThemeState(theme);
+    localStorage.setItem('coverTheme', theme);
+  };
+
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t }}>
+    <LanguageContext.Provider value={{ lang, setLang, t, coverTheme, setCoverTheme }}>
       {children}
     </LanguageContext.Provider>
   );

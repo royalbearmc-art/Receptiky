@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { useT, type Lang } from '../lib/i18n';
+import { useT, type Lang, type CoverTheme } from '../lib/i18n';
 
 const BG_GRADIENT =
   'linear-gradient(to bottom, #D9D95D 0%, #E3E488 26%, #EBEDA9 49%, #F3F6CC 75%, #FAFEEB 100%) top / 100% 112px no-repeat, #FAFEEB';
@@ -161,11 +161,58 @@ function LangRow({ label, lang, setLang }: LangRowProps) {
   );
 }
 
+interface CoverRowProps {
+  label: string;
+  coverTheme: CoverTheme;
+  setCoverTheme: (t: CoverTheme) => void;
+  labelClassic: string;
+  labelNew: string;
+}
+
+function CoverRow({ label, coverTheme, setCoverTheme, labelClassic, labelNew }: CoverRowProps) {
+  const chip = (val: CoverTheme, text: string) => {
+    const active = coverTheme === val;
+    return (
+      <button
+        key={val}
+        onClick={() => setCoverTheme(val)}
+        style={{
+          fontFamily: "'Alike', serif",
+          fontSize: 12,
+          color: OLIVE,
+          padding: '5px 12px',
+          borderRadius: 14,
+          background: active ? YELLOW : 'rgba(255,255,255,0.6)',
+          border: active ? 'none' : '1px solid rgba(104,104,3,0.15)',
+          cursor: 'pointer',
+          fontWeight: active ? 600 : 400,
+        }}
+      >
+        {text}
+      </button>
+    );
+  };
+
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      width: '100%', padding: '14px 16px',
+      borderBottom: '1px solid rgba(104,104,3,0.08)',
+    }}>
+      <span style={{ fontFamily: "'Alike', serif", fontSize: 13, color: OLIVE }}>{label}</span>
+      <div style={{ display: 'flex', gap: 6 }}>
+        {chip('classic', labelClassic)}
+        {chip('new', labelNew)}
+      </div>
+    </div>
+  );
+}
+
 type PwState = 'idle' | 'sending' | 'sent' | 'error';
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { t, lang, setLang } = useT();
+  const { t, lang, setLang, coverTheme, setCoverTheme } = useT();
   const [email, setEmail] = useState<string | null>(null);
   const [pwState, setPwState] = useState<PwState>('idle');
 
@@ -265,6 +312,13 @@ export default function Settings() {
             disabled
           />
           <LangRow label={t('settings.appearance.language')} lang={lang} setLang={setLang} />
+          <CoverRow
+            label={t('settings.appearance.cover')}
+            coverTheme={coverTheme}
+            setCoverTheme={setCoverTheme}
+            labelClassic={t('settings.appearance.cover.classic')}
+            labelNew={t('settings.appearance.cover.new')}
+          />
         </Section>
 
         {/* About */}
