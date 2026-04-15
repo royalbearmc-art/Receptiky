@@ -176,53 +176,55 @@ export default function Calendar() {
 
       {/* ── WEEK VIEW ── */}
       {view === 'week' && (
-        <div style={{ margin: '12px 9px 0' }}>
-          {/* Day columns */}
-          <div style={{ display: 'flex', gap: 4 }}>
-            {weekDays.map((day) => {
-              const ds = toDateStr(day);
-              const dayEntries = entriesForDate(ds);
-              const isToday = ds === today;
-              const isSelected = selectedDate === ds;
+        <div style={{ margin: '12px 9px 0', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {[weekDays.slice(0, 4), weekDays.slice(4)].map((rowDays, rowIdx) => (
+            <div key={rowIdx} style={{ display: 'flex', gap: 6 }}>
+              {rowDays.map((day) => {
+                const ds = toDateStr(day);
+                const dayEntries = entriesForDate(ds);
+                const isToday = ds === today;
+                const isSelected = selectedDate === ds;
 
-              return (
-                <div key={ds}
-                  onClick={() => setSelectedDate(isSelected ? null : ds)}
-                  style={{
-                    flex: 1, borderRadius: 12, padding: '8px 4px',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                    cursor: 'pointer',
-                    background: isSelected ? 'rgba(217,217,93,0.25)' : 'rgba(255,255,255,0.3)',
-                    border: isSelected ? `1.5px solid ${YELLOW}` : '1.5px solid transparent',
-                    transition: 'all 0.15s',
-                  }}>
-                  {/* Day abbr */}
-                  <span style={{ fontSize: 9, color: OLIVE, opacity: 0.55, fontFamily: "'Alike', serif" }}>
-                    {DAY_SHORT[day.getDay()]}
-                  </span>
-                  {/* Date number */}
-                  <div style={{
-                    width: 24, height: 24, borderRadius: '50%',
-                    background: isToday ? YELLOW : 'transparent',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <span style={{ fontSize: 12, color: OLIVE, fontFamily: "'Alike', serif", fontWeight: isToday ? 600 : 400 }}>
-                      {day.getDate()}
+                return (
+                  <div key={ds}
+                    onClick={() => setSelectedDate(isSelected ? null : ds)}
+                    style={{
+                      flex: 1, borderRadius: 14, padding: '12px 6px',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                      cursor: 'pointer',
+                      background: isSelected ? 'rgba(217,217,93,0.35)' : 'rgba(255,255,255,0.45)',
+                      border: isSelected ? `1.5px solid ${YELLOW}` : '1.5px solid transparent',
+                      boxShadow: '0 1px 4px rgba(104,104,3,0.07)',
+                      transition: 'all 0.15s',
+                    }}>
+                    {/* Day abbr */}
+                    <span style={{ fontSize: 10, color: OLIVE, opacity: 0.55, fontFamily: "'Alike', serif" }}>
+                      {DAY_SHORT[day.getDay()]}
                     </span>
+                    {/* Date number */}
+                    <div style={{
+                      width: 28, height: 28, borderRadius: '50%',
+                      background: isToday ? YELLOW : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <span style={{ fontSize: 13, color: OLIVE, fontFamily: "'Alike', serif", fontWeight: isToday ? 600 : 400 }}>
+                        {day.getDate()}
+                      </span>
+                    </div>
+                    {/* Meal dots */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3, justifyContent: 'center', minHeight: 18 }}>
+                      {SLOTS.map(slot => {
+                        const has = dayEntries.some(e => e.meal_slot === slot);
+                        return has ? (
+                          <div key={slot} style={{ width: 7, height: 7, borderRadius: '50%', background: SLOT_COLORS[slot] }} />
+                        ) : null;
+                      })}
+                    </div>
                   </div>
-                  {/* Meal dots */}
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'center', minHeight: 16 }}>
-                    {SLOTS.map(slot => {
-                      const has = dayEntries.some(e => e.meal_slot === slot);
-                      return has ? (
-                        <div key={slot} style={{ width: 6, height: 6, borderRadius: '50%', background: SLOT_COLORS[slot] }} />
-                      ) : null;
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       )}
 
