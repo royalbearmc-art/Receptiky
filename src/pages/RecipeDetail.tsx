@@ -569,7 +569,8 @@ export default function RecipeDetail() {
               onClick={async () => {
                 setSaveError(null);
                 setSaving(true);
-                const payload = { ...recipe, updated_at: new Date().toISOString() };
+                // Clear cached macros so they recalculate after ingredients change
+                const payload = { ...recipe, updated_at: new Date().toISOString(), cached_macros: null };
                 try {
                   if (isNew) {
                     const saved = await addRecipe({ ...payload, created_at: new Date().toISOString() });
@@ -578,6 +579,7 @@ export default function RecipeDetail() {
                     navigate(`/recipes/${saved.id}`, { replace: true });
                   } else {
                     await updateRecipe(payload);
+                    setMacros(null);        // force recalculation on next view
                     setIsEditing(false);
                     setShowMenu(false);
                   }

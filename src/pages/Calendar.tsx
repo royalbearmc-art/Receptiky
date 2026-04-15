@@ -134,6 +134,13 @@ export default function Calendar() {
   return (
     <div style={{ background: BG, width: '100%', minHeight: '100dvh', paddingBottom: 80, position: 'relative' }}>
 
+      {/* Back to home */}
+      <img
+        src="/späť.png" alt="Späť"
+        onClick={() => navigate('/')}
+        style={{ position: 'absolute', left: 22, top: 52, width: 31, height: 31, cursor: 'pointer', objectFit: 'contain' }}
+      />
+
       {/* Header */}
       <p style={{
         fontFamily: "'Srisakdi', cursive", fontSize: 29.4, color: OLIVE,
