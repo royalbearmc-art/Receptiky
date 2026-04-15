@@ -88,8 +88,8 @@ const sk: Dict = {
   'settings.about': 'O aplikácii',
   'settings.about.version': 'Verzia',
   'settings.appearance.cover': 'Titulná strana',
-  'settings.appearance.cover.classic': 'Klasická',
-  'settings.appearance.cover.new': 'Nová',
+  'settings.appearance.cover.classic': 'Narcisky',
+  'settings.appearance.cover.new': 'Kuchtíčky',
   'settings.more-coming': 'Viac nastavení čoskoro',
 
   // Reset password page
@@ -188,8 +188,8 @@ const en: Dict = {
   'settings.about': 'About',
   'settings.about.version': 'Version',
   'settings.appearance.cover': 'Cover design',
-  'settings.appearance.cover.classic': 'Classic',
-  'settings.appearance.cover.new': 'New',
+  'settings.appearance.cover.classic': 'Narcisky',
+  'settings.appearance.cover.new': 'Kuchtíčky',
   'settings.more-coming': 'More settings coming soon',
 
   // Reset password page
@@ -226,9 +226,9 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [coverTheme, setCoverThemeState] = useState<CoverTheme>(() => {
-    if (typeof window === 'undefined') return 'classic';
+    if (typeof window === 'undefined') return 'new';
     const saved = localStorage.getItem('coverTheme');
-    return saved === 'new' ? 'new' : 'classic';
+    return saved === 'classic' ? 'classic' : 'new'; // 'new' (Kuchtíčky) is default
   });
 
   useEffect(() => {
