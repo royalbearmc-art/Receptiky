@@ -9,6 +9,17 @@ export interface Step {
   timer_minutes: number | null;
 }
 
+export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack';
+
+export interface CalendarEntry {
+  id: string;
+  user_id: string;
+  recipe_id: string;
+  date: string; // YYYY-MM-DD
+  meal_slot: MealSlot;
+  recipe?: Recipe;
+}
+
 export interface Macros {
   calories: number;
   protein: number;

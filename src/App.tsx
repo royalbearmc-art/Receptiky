@@ -10,7 +10,10 @@ import SignIn from './pages/SignIn';
 import Settings from './pages/Settings';
 import ResetPassword from './pages/ResetPassword';
 import { RecipesProvider } from './lib/RecipesContext';
+import { CalendarProvider } from './lib/CalendarContext';
 import { LanguageProvider } from './lib/i18n';
+import BottomNav from './components/BottomNav';
+import Calendar from './pages/Calendar';
 
 const SHELL_STYLE: React.CSSProperties = {
   width: '100%',
@@ -77,19 +80,23 @@ export default function App() {
   return (
     <LanguageProvider>
       <RecipesProvider>
-        <BrowserRouter>
-          <div style={SHELL_STYLE}>
-            <Routes>
-              <Route path="/" element={<Cover />} />
-              <Route path="/recipes" element={<RecipeLibrary />} />
-              <Route path="/recipes/:id" element={<RecipeDetail />} />
-              <Route path="/design-options" element={<RecipeDesignOptions />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </div>
-        </BrowserRouter>
+        <CalendarProvider>
+          <BrowserRouter>
+            <div style={SHELL_STYLE}>
+              <Routes>
+                <Route path="/" element={<Cover />} />
+                <Route path="/recipes" element={<RecipeLibrary />} />
+                <Route path="/recipes/:id" element={<RecipeDetail />} />
+                <Route path="/calendar" element={<Calendar />} />
+                <Route path="/design-options" element={<RecipeDesignOptions />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+              <BottomNav />
+            </div>
+          </BrowserRouter>
+        </CalendarProvider>
       </RecipesProvider>
     </LanguageProvider>
   );
