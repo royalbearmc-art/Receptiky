@@ -49,7 +49,7 @@ export default function CoverNew() {
         aspectRatio: '277 / 412',
         borderRadius: '50%',
         background: '#F5F0DC',
-        boxShadow: 'inset 0 2px 12px rgba(104,104,3,0.08)',
+        boxShadow: '0px 4px 8px 0px rgba(168,179,137,0.53)',
       }} />
 
       {/* Oval SVG border */}
