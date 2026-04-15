@@ -79,13 +79,30 @@ async function fetchOFF(query: string): Promise<Macros | null> {
   }
 }
 
+/* ── Proxy call (production) — avoids CORS entirely ── */
+async function fetchProxy(query: string): Promise<Macros | null> {
+  try {
+    const res = await fetch(`/api/nutrition?q=${encodeURIComponent(query)}`);
+    if (!res.ok) return null;
+    return await res.json() as Macros | null;
+  } catch {
+    return null;
+  }
+}
+
 /* ── Per-ingredient macro fetch (per 100g) ── */
 async function getMacrosPer100g(name: string): Promise<Macros | null> {
   const en = translateIngredient(name);
+
+  // In production use the server-side proxy (no CORS, key hidden).
+  // In local dev (/api/ isn't served by Vite) fall back to direct calls.
+  if (!import.meta.env.DEV) {
+    return fetchProxy(en);
+  }
+
   const usda = await fetchUSDA(en);
   if (usda && usda.calories > 0) return usda;
-  const off = await fetchOFF(en);
-  return off;
+  return fetchOFF(en);
 }
 
 /* ── Main pipeline: calculate total macros for a recipe ── */
