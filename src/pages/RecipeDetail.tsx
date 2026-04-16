@@ -209,8 +209,9 @@ export default function RecipeDetail() {
         background: 'rgba(243,246,204,0.5)',
         backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
         boxShadow: '0 2px 8px rgba(104,104,3,0.12), inset 0 1px 0 rgba(255,255,255,0.4)',
-        display: 'flex', alignItems: 'center', padding: '0 8px', gap: 6,
+        display: 'flex', alignItems: 'center', padding: '0 8px 0 8px', gap: 6,
         overflowX: 'auto', overflowY: 'visible', scrollbarWidth: 'none' as const,
+        paddingRight: 48, // leave room for the pinned settings button
       }}>
         {/* Back */}
         <button onClick={() => navigate(-1)} style={{
@@ -246,18 +247,17 @@ export default function RecipeDetail() {
             border: `1px dashed ${OLIVE}`, cursor: 'pointer', flexShrink: 0,
           }}>{t('detail.add-tag')}</button>
         )}
-
-        <div style={{ flex: 1 }} />
-
-        {/* Settings */}
-        <button onClick={() => setShowMenu((v) => !v)} style={{
-          background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-          width: 34.86, height: 34.86, display: 'flex', alignItems: 'center',
-          justifyContent: 'center', flexShrink: 0,
-        }}>
-          <img src="/settings.png" alt="Settings" style={{ width: 34.86, height: 34.86, objectFit: 'contain' }} />
-        </button>
       </div>
+
+      {/* Settings button — pinned to the right of the nav bar, never scrolls */}
+      <button onClick={() => setShowMenu((v) => !v)} style={{
+        position: 'absolute', right: 14, top: 14,
+        background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+        width: 34.86, height: 34.86, display: 'flex', alignItems: 'center',
+        justifyContent: 'center', zIndex: 10,
+      }}>
+        <img src="/settings.png" alt="Settings" style={{ width: 34.86, height: 34.86, objectFit: 'contain' }} />
+      </button>
 
       {/* Settings dropdown — outside nav bar so it's not clipped */}
       {showMenu && (
