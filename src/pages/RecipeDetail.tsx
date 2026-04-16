@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Cropper from 'react-easy-crop';
 import type { Area } from 'react-easy-crop';
@@ -76,18 +76,22 @@ export default function RecipeDetail() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
+  // Track ingredient fingerprint so we only clear the macro cache when ingredients actually change
+  const ingFingerprintRef = useRef(JSON.stringify(recipe.ingredients));
+
   useEffect(() => {
-    if (isEditing || isNew || macros) return;
+    if (isEditing || isNew || macros !== null) return;
     if (recipe.ingredients.length === 0 || !recipe.ingredients[0].name) return;
     setMacrosLoading(true);
     calculateRecipeMacros(recipe.ingredients)
       .then((m) => {
         setMacros(m);
         updateRecipe({ ...recipe, cached_macros: m });
+        ingFingerprintRef.current = JSON.stringify(recipe.ingredients);
       })
       .finally(() => setMacrosLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recipe.id]);
+  }, [recipe.id, macros]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -583,8 +587,13 @@ export default function RecipeDetail() {
               onClick={async () => {
                 setSaveError(null);
                 setSaving(true);
-                // Clear cached macros so they recalculate after ingredients change
-                const payload = { ...recipe, updated_at: new Date().toISOString(), cached_macros: null };
+                // Only clear cached macros if ingredients actually changed
+                const ingredientsChanged = JSON.stringify(recipe.ingredients) !== ingFingerprintRef.current;
+                const payload = {
+                  ...recipe,
+                  updated_at: new Date().toISOString(),
+                  cached_macros: ingredientsChanged ? null : macros,
+                };
                 try {
                   if (isNew) {
                     const saved = await addRecipe({ ...payload, created_at: new Date().toISOString() });
@@ -593,7 +602,7 @@ export default function RecipeDetail() {
                     navigate(`/recipes/${saved.id}`, { replace: true });
                   } else {
                     await updateRecipe(payload);
-                    setMacros(null);        // force recalculation on next view
+                    if (ingredientsChanged) setMacros(null); // triggers effect to recalculate
                     setIsEditing(false);
                     setShowMenu(false);
                   }
