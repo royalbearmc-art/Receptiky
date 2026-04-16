@@ -264,17 +264,31 @@ export default function RecipeDetail() {
           border: '1px solid rgba(104,104,3,0.1)',
         }}>
           <button onClick={() => { setIsEditing(true); setShowMenu(false); }} style={{
-            display: 'block', width: '100%', padding: '10px 16px',
+            display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '10px 16px',
             fontFamily: "'Alike', serif", fontSize: 13, color: OLIVE,
             background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
             borderBottom: '1px solid rgba(104,104,3,0.08)',
-          }}>{t('detail.edit')}</button>
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            {t('detail.edit')}
+          </button>
           {!isNew && (
             <button onClick={() => { setConfirmDelete(true); setShowMenu(false); }} style={{
-              display: 'block', width: '100%', padding: '10px 16px',
+              display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '10px 16px',
               fontFamily: "'Alike', serif", fontSize: 13, color: '#a33',
               background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
-            }}>{t('detail.delete')}</button>
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6M14 11v6"/>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+              </svg>
+              {t('detail.delete')}
+            </button>
           )}
         </div>
       )}

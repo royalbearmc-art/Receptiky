@@ -39,8 +39,8 @@ const sk: Dict = {
   // Detail
   'detail.not-found': 'Recept sa nenašiel.',
   'detail.title-placeholder': 'Názov receptu...',
-  'detail.edit': '✏️ Upraviť recept',
-  'detail.delete': '🗑 Zmazať recept',
+  'detail.edit': 'Upraviť recept',
+  'detail.delete': 'Zmazať recept',
   'detail.delete.confirm': 'Naozaj zmazať tento recept?',
   'detail.delete.yes': 'Áno, zmazať',
   'detail.delete.no': 'Zrušiť',
@@ -139,8 +139,8 @@ const en: Dict = {
   // Detail
   'detail.not-found': 'Recipe not found.',
   'detail.title-placeholder': 'Recipe name...',
-  'detail.edit': '✏️ Edit recipe',
-  'detail.delete': '🗑 Delete recipe',
+  'detail.edit': 'Edit recipe',
+  'detail.delete': 'Delete recipe',
   'detail.delete.confirm': 'Really delete this recipe?',
   'detail.delete.yes': 'Yes, delete',
   'detail.delete.no': 'Cancel',
